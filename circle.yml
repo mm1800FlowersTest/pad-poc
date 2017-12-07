@@ -25,7 +25,7 @@ jobs:
             curl -o ~/google-cloud-sdk.zip https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip
             unzip -q -d ~/ ~/google-cloud-sdk.zip
             rm ~/google-cloud-sdk.zip
-                        
+            #update components
             ~/google-cloud-sdk/bin/gcloud --quiet components list
             ~/google-cloud-sdk/bin/gcloud --quiet components update            
       # Retrieve our gcloud service account from the CircleCI environment
@@ -37,12 +37,12 @@ jobs:
       # Set the gcloud current project
       - run: 
           name: Setup the gcloud config
-          command: ~/google-cloud-sdk/bin/gcloud --quiet config set project $GOOGLE_PROJECT_ID     
-      # don't need right now.
-      #gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-      #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
-      
-          
+          command: |
+            ~/google-cloud-sdk/bin/gcloud --quiet config set project $GOOGLE_PROJECT_ID     
+            # don't need right now.
+            #gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
+                
       # Get the code    
       - checkout
 
