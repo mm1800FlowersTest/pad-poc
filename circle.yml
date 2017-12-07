@@ -21,10 +21,10 @@ jobs:
     steps:
       # Download Google App Engine SDK
       - run: 
-        command: |
-          curl -o ~/google-cloud-sdk.zip https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip
-          unzip -q -d ~/ ~/google-cloud-sdk.zip
-          rm ~/google-cloud-sdk.zip
+          command: |
+            curl -o ~/google-cloud-sdk.zip https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip
+            unzip -q -d ~/ ~/google-cloud-sdk.zip
+            rm ~/google-cloud-sdk.zip
       # Make sure gcloud is up to date
       - run: ~/google-cloud-sdk/bin/gcloud --quiet components list
       - run: ~/google-cloud-sdk/bin/gcloud --quiet components update
