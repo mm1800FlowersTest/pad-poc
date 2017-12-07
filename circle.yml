@@ -29,7 +29,7 @@ jobs:
             ~/google-cloud-sdk/bin/gcloud --quiet components list
             ~/google-cloud-sdk/bin/gcloud --quiet components update
             
-      - run: echo $GCLOUD_JSON
+      - run: echo [[$GCLOUD_JSON]]
       # Retrieve our gcloud service account from the CircleCI environment
       - run: echo $GCLOUD_JSON | base64 --decode > ~/gcloud-client.json
       #- sed  s/YOUR-API-KEY/$API_KEY/ api_key.py.sample > api_key.py
