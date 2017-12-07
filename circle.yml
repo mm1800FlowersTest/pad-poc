@@ -26,8 +26,9 @@ jobs:
             unzip -q -d ~/ ~/google-cloud-sdk.zip
             rm ~/google-cloud-sdk.zip
             # update gcloud components
-            ~/google-cloud-sdk/bin/gcloud --quiet components list
+            ~/google-cloud-sdk/bin/gcloud --quiet components install app-engine-java
             ~/google-cloud-sdk/bin/gcloud --quiet components update            
+            ~/google-cloud-sdk/bin/gcloud --quiet components list
             # retrieve our gcloud service account from the CircleCI environment
             echo $GOOGLE_AUTH | base64 --decode --ignore-garbage > ~/gcp-key.json
             ~/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file  ~/gcp-key.json      
