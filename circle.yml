@@ -24,8 +24,8 @@ jobs:
       - run: unzip ~/google-cloud-sdk.zip
       - run: rm ~/google-cloud-sdk.zip
       # Make sure gcloud is up to date
-      - run: gcloud --quiet components list
-      - run: gcloud --quiet components update
+      - run: ~/google-cloud-sdk/bin/gcloud --quiet components list
+      - run: ~/google-cloud-sdk/bin/gcloud --quiet components update
             
       # Retrieve our secrets from the CircleCI environment
       #- echo $GCLOUD_JSON | base64 --decode > ${HOME}/client-secret.json
