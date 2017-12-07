@@ -37,7 +37,7 @@ jobs:
             - ~/.m2
           key: v1-dependencies-{{ checksum "pom.xml" }}
       # Build
-      - run: mvn appengine:stage
+      - run: mvn -DskipTests=true appengine:stage
       
       # run tests!
       #- run: mvn integration-test
