@@ -27,7 +27,7 @@ jobs:
       #- unzip -q -d $HOME $HOME/appengine-java-sdk-1.9.59.zip
       - if [ ! -d ~/google-cloud-sdk ]; then curl https://sdk.cloud.google.com | bash; ~/google-cloud-sdk/bin/gcloud components update preview; fi
       
-      - echo $HOME
+      - run: echo $HOME
             
       # Retrieve our secrets from the CircleCI environment
       #- echo $GCLOUD_JSON | base64 --decode > ${HOME}/client-secret.json
