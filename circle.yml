@@ -19,16 +19,17 @@ jobs:
       #PATH: $PATH:$HOME/google-cloud-sdk/bin
     
     steps:
-      # Download Google App Engine SDK
+      # Download Google App Engine SDK and make sure the components are up to date
       - run: 
           command: |
             curl -o ~/google-cloud-sdk.zip https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip
             unzip -q -d ~/ ~/google-cloud-sdk.zip
             rm ~/google-cloud-sdk.zip
-      # Make sure gcloud is up to date
-      - run: ~/google-cloud-sdk/bin/gcloud --quiet components list
-      - run: ~/google-cloud-sdk/bin/gcloud --quiet components update
+                        
+            ~/google-cloud-sdk/bin/gcloud --quiet components list
+            ~/google-cloud-sdk/bin/gcloud --quiet components update
             
+      - run: echo $GCLOUD_JSON
       # Retrieve our gcloud service account from the CircleCI environment
       - run: echo $GCLOUD_JSON | base64 --decode > ~/gcloud-client.json
       #- sed  s/YOUR-API-KEY/$API_KEY/ api_key.py.sample > api_key.py
