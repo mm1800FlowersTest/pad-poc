@@ -20,9 +20,8 @@ jobs:
     steps:
       # Download Google App Engine SDK
       # This is not necessary to deploy, its only necessary  to run local tests importing the App Engine SDK
-      - run |
-        curl -o $HOME/appengine-java-sdk-1.9.59.zip https://storage.googleapis.com/appengine-sdks/featured/appengine-java-sdk-1.9.59.zip
-        unzip -q -d $HOME $HOME/appengine-java-sdk-1.9.59.zip
+      - run: curl -o $HOME/appengine-java-sdk-1.9.59.zip https://storage.googleapis.com/appengine-sdks/featured/appengine-java-sdk-1.9.59.zip
+      - run: unzip -q -d $HOME $HOME/appengine-java-sdk-1.9.59.zip
       #- run:  if [[ ! -d ~/google-cloud-sdk ]]; then curl https://sdk.cloud.google.com | bash; ~/google-cloud-sdk/bin/gcloud components update --quiet; fi
       
             
