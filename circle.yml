@@ -16,33 +16,33 @@ jobs:
     environment:
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m
-      #PATH: $PATH:$HOME/google-cloud-sdk/bin
     
     steps:
       # Download Google App Engine SDK and make sure the components are up to date
       - run: 
+          name: Download Google App Engine SDK and make sure the components are up to date
           command: |
             curl -o ~/google-cloud-sdk.zip https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip
             unzip -q -d ~/ ~/google-cloud-sdk.zip
             rm ~/google-cloud-sdk.zip
                         
             ~/google-cloud-sdk/bin/gcloud --quiet components list
-            ~/google-cloud-sdk/bin/gcloud --quiet components update
-            
+            ~/google-cloud-sdk/bin/gcloud --quiet components update            
       # Retrieve our gcloud service account from the CircleCI environment
-      - run: echo $GCLOUD_JSON | base64 --decode --ignore-garbage > ~/gcloud-client.json
-      # Set the gcloud service account
-      - run: ~/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file  ~/gcloud-client.json
+      - run:
+          name:  Retrieve and set gcloud service account
+          command: |
+            echo $GOOGLE_AUTH | base64 --decode --ignore-garbage > ~/gcp-key.json
+            ~/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file  ~/gcp-key.json      
+      # Set the gcloud current project
+      - run: 
+          name: Setup the gcloud config
+          command: ~/google-cloud-sdk/bin/gcloud --quiet config set project $GOOGLE_PROJECT_ID     
+      # don't need right now.
+      #gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+      #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
       
-      - run: ~/google-cloud-sdk/bin/gcloud info
-      
-      #- sed  s/YOUR-API-KEY/$API_KEY/ api_key.py.sample > api_key.py
-      # vendor our dependencies
-      #- mkdir -p lib
-      #- pip install -r requirements.txt -t lib
-      # Replace <your-project-id>
-      #- gcloud config set project $GCLOUD_PROJECT
-    
+          
       # Get the code    
       - checkout
 
