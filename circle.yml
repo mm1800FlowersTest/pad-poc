@@ -6,15 +6,11 @@ version: 2
 jobs:
   build:
     docker:
-      - image: google/cloud-sdk
-      # specify the version you desire here
+      # Specify the circleci build base image here.    
+      # note: can't use this gcloud image since it doesn't have maven and likely jdk8.  should create custom to combine the 2 images.
+      #- image: google/cloud-sdk
       - image: circleci/openjdk:8-jdk
       
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
-
     working_directory: ~/repo
 
     environment:
@@ -22,13 +18,11 @@ jobs:
       MAVEN_OPTS: -Xmx3200m
     
     steps:
-      - run: echo $HOME
-
       # Download Google App Engine SDK
       # This is not necessary to deploy, its only necessary  to run local tests importing the App Engine SDK
       #- curl -o $HOME/appengine-java-sdk-1.9.59.zip https://storage.googleapis.com/appengine-sdks/featured/appengine-java-sdk-1.9.59.zip
       #- unzip -q -d $HOME $HOME/appengine-java-sdk-1.9.59.zip
-      #- run:  if [[ ! -d ~/google-cloud-sdk ]]; then curl https://sdk.cloud.google.com | bash; ~/google-cloud-sdk/bin/gcloud components update preview; fi
+      - run:  if [[ ! -d ~/google-cloud-sdk ]]; then curl https://sdk.cloud.google.com | bash; ~/google-cloud-sdk/bin/gcloud components update --quiet; fi
       
             
       # Retrieve our secrets from the CircleCI environment
