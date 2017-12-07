@@ -18,7 +18,6 @@ jobs:
       MAVEN_OPTS: -Xmx3200m
     
     steps:
-      # Download Google App Engine SDK and make sure the components are up to date
       - run: 
           name: Download Google App Engine SDK and make sure the components are up to date
           command: |
@@ -28,16 +27,10 @@ jobs:
             #update components
             ~/google-cloud-sdk/bin/gcloud --quiet components list
             ~/google-cloud-sdk/bin/gcloud --quiet components update            
-      # Retrieve our gcloud service account from the CircleCI environment
-      - run:
-          name:  Retrieve and set gcloud service account
-          command: |
+            # Retrieve our gcloud service account from the CircleCI environment
             echo $GOOGLE_AUTH | base64 --decode --ignore-garbage > ~/gcp-key.json
             ~/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file  ~/gcp-key.json      
-      # Set the gcloud current project
-      - run: 
-          name: Setup the gcloud config
-          command: |
+            # Set the gcloud config environment like current project
             ~/google-cloud-sdk/bin/gcloud --quiet config set project $GOOGLE_PROJECT_ID     
             # don't need right now.
             #gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
