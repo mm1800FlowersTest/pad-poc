@@ -25,7 +25,7 @@ jobs:
       # This is not necessary to deploy, its only necessary  to run local tests importing the App Engine SDK
       #- curl -o $HOME/appengine-java-sdk-1.9.59.zip https://storage.googleapis.com/appengine-sdks/featured/appengine-java-sdk-1.9.59.zip
       #- unzip -q -d $HOME $HOME/appengine-java-sdk-1.9.59.zip
-      - if [ ! -d ~/google-cloud-sdk ]; then curl https://sdk.cloud.google.com | bash; ~/google-cloud-sdk/bin/gcloud components update preview; fi
+      - if [[ ! -d ~/google-cloud-sdk ]]; then curl https://sdk.cloud.google.com | bash; ~/google-cloud-sdk/bin/gcloud components update preview; fi
       
       - run: echo $HOME
             
