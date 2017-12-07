@@ -20,21 +20,23 @@ jobs:
     
     steps:
       # Download Google App Engine SDK
-      - run: curl -o ~/google-cloud-sdk.zip https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip
-      - run: unzip -q -d ~/ ~/google-cloud-sdk.zip
-      - run: rm ~/google-cloud-sdk.zip
+      - run: 
+        command: |
+          curl -o ~/google-cloud-sdk.zip https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip
+          unzip -q -d ~/ ~/google-cloud-sdk.zip
+          rm ~/google-cloud-sdk.zip
       # Make sure gcloud is up to date
       - run: ~/google-cloud-sdk/bin/gcloud --quiet components list
       - run: ~/google-cloud-sdk/bin/gcloud --quiet components update
             
-      # Retrieve our secrets from the CircleCI environment
-      #- echo $GCLOUD_JSON | base64 --decode > ${HOME}/client-secret.json
+      # Retrieve our gcloud service account from the CircleCI environment
+      - run: echo $GCLOUD_JSON | base64 --decode > ~/gcloud-client.json
       #- sed  s/YOUR-API-KEY/$API_KEY/ api_key.py.sample > api_key.py
       # vendor our dependencies
       #- mkdir -p lib
       #- pip install -r requirements.txt -t lib
       # authenticate gcloud
-      #- gcloud auth activate-service-account --key-file ${HOME}/client-secret.json
+      #- gcloud auth activate-service-account --key-file  ~/gcloud-client.json
       # Replace <your-project-id>
       #- gcloud config set project $GCLOUD_PROJECT
     
