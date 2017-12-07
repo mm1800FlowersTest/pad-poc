@@ -19,18 +19,19 @@ jobs:
     
     steps:
       - run: 
-          name: Download Google App Engine SDK and make sure the components are up to date
+          name: Download/update/setup Google App Engine SDK
           command: |
+            # download the gcloud sdk 
             curl -o ~/google-cloud-sdk.zip https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip
             unzip -q -d ~/ ~/google-cloud-sdk.zip
             rm ~/google-cloud-sdk.zip
-            #update components
+            # update gcloud components
             ~/google-cloud-sdk/bin/gcloud --quiet components list
             ~/google-cloud-sdk/bin/gcloud --quiet components update            
-            # Retrieve our gcloud service account from the CircleCI environment
+            # retrieve our gcloud service account from the CircleCI environment
             echo $GOOGLE_AUTH | base64 --decode --ignore-garbage > ~/gcp-key.json
             ~/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file  ~/gcp-key.json      
-            # Set the gcloud config environment like current project
+            # set the gcloud config environment like current project
             ~/google-cloud-sdk/bin/gcloud --quiet config set project $GOOGLE_PROJECT_ID     
             # don't need right now.
             #gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
@@ -53,7 +54,13 @@ jobs:
             - ~/.m2
           key: v1-dependencies-{{ checksum "pom.xml" }}
       # Build
-      #- run: mvn -DskipTests=true appengine:stage
+      - run: mvn -DskipTests=true appengine:stage
+      # Deploy
+      - run: 
+          name: deploy
+          command: |
+            cd target/appengine-staging
+            ~/google-cloud-sdk/bin/gcloud app deploy app.yaml
       
       # run tests!
       #- run: mvn integration-test
