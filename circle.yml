@@ -31,7 +31,7 @@ jobs:
             
       - run: echo [[$GCLOUD_JSON]]
       # Retrieve our gcloud service account from the CircleCI environment
-      - run: echo $GCLOUD_JSON | base64 --decode > ~/gcloud-client.json
+      - run: echo $GCLOUD_JSON | base64 --decode --ignore-garbage > ~/gcloud-client.json
       #- sed  s/YOUR-API-KEY/$API_KEY/ api_key.py.sample > api_key.py
       # vendor our dependencies
       #- mkdir -p lib
