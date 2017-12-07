@@ -20,14 +20,12 @@ jobs:
     
     steps:
       # Download Google App Engine SDK
-      # This is not necessary to deploy, its only necessary  to run local tests importing the App Engine SDK
-      #- run: curl -o $HOME/appengine-java-sdk-1.9.59.zip https://storage.googleapis.com/appengine-sdks/featured/appengine-java-sdk-1.9.59.zip
-      #- run: unzip -q -d $HOME $HOME/appengine-java-sdk-1.9.59.zip
-      #- run:  if [[ ! -d ~/google-cloud-sdk ]]; then curl https://sdk.cloud.google.com | bash; ~/google-cloud-sdk/bin/gcloud components update --quiet; fi
       - run: curl -o ~/google-cloud-sdk.zip https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip
       - run: unzip ~/google-cloud-sdk.zip
       - run: rm ~/google-cloud-sdk.zip
-      - run: rm $HOME/google-cloud-sdk.zip
+      # Make sure gcloud is up to date
+      - run: gcloud --quiet components list
+      - run: gcloud --quiet components update
             
       # Retrieve our secrets from the CircleCI environment
       #- echo $GCLOUD_JSON | base64 --decode > ${HOME}/client-secret.json
@@ -35,8 +33,6 @@ jobs:
       # vendor our dependencies
       #- mkdir -p lib
       #- pip install -r requirements.txt -t lib
-      # Make sure gcloud is up to date
-      #- run: gcloud --quiet components update app
       # authenticate gcloud
       #- gcloud auth activate-service-account --key-file ${HOME}/client-secret.json
       # Replace <your-project-id>
