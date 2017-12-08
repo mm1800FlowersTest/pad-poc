@@ -80,6 +80,15 @@ jobs:
       MAVEN_OPTS: -Xmx3200m    
     steps:
 
+      - restore_cache:
+          keys:
+            - v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "pom.xml" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
       - run: 
           name: Download/update/setup Google App Engine SDK
           command: |
@@ -100,15 +109,12 @@ jobs:
             #gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
             #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}                
 
+      - save_cache:
+          key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - ~/google-cloud-sdk
+
       # Download and cache application dependencies
-      - restore_cache:
-          keys:
-            - v1-repo-{{ .Environment.CIRCLE_SHA1 }}
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "pom.xml" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
 
       - run: mvn dependency:go-offline
 
@@ -116,7 +122,6 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
           paths:
             - ~/.m2 
-            - ~/google-cloud-sdk
 
       #- restore_cache:
       #    keys:
@@ -140,6 +145,9 @@ jobs:
       - restore_cache:
           keys:
             - v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+      - restore_cache:
+          keys:
+            - v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "pom.xml" }}
