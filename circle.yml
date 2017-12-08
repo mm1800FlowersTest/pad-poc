@@ -184,21 +184,25 @@ workflows:
           type: approval
           requires:
             - build
+            - deploy-dev
+      - deploy-uat:      
+          requires:        
+            - hold-uat
+
       - hold-loadtest:      
           type: approval
           requires:
             - build
+      - deploy-loadtest:      
+          requires:        
+            - hold-loadtest
+
       - hold-prod:      
           type: approval
           requires:
             - build
-
-      - deploy-uat:      
-          requires:        
-            - hold-uat
-      - deploy-loadtest:      
-          requires:        
-            - hold-loadtest
+            - deploy-uat
+            - deploy-loadtest 
       - deploy-prod:      
           requires:        
             - hold-prod
