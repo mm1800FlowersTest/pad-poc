@@ -4,13 +4,72 @@
 #
 version: 2
 jobs:
-  build:
+  checkout_code:
     docker:
       # Specify the circleci build base image here.    
       # note: can't use this gcloud image since it doesn't have maven and likely jdk8.  should create custom to combine the 2 images.
       #- image: google/cloud-sdk
       - image: circleci/openjdk:8-jdk
-      
+    working_directory: ~/repo
+    steps:
+       # Get the code    
+      - checkout
+      - save_cache:
+          key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - ~/repo
+    
+  setup_dependencies:
+    docker:
+      # Specify the circleci build base image here.    
+      # note: can't use this gcloud image since it doesn't have maven and likely jdk8.  should create custom to combine the 2 images.
+      #- image: google/cloud-sdk
+      - image: circleci/openjdk:8-jdk      
+    working_directory: ~/repo
+    environment:
+      # Customize the JVM maximum heap limit
+      MAVEN_OPTS: -Xmx3200m
+          
+    steps:
+      - run: 
+          name: Download/update/setup Google App Engine SDK
+          command: |
+            # download the gcloud sdk 
+            curl -o ~/google-cloud-sdk.zip https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip
+            unzip -q -d ~/ ~/google-cloud-sdk.zip
+            rm ~/google-cloud-sdk.zip
+            # update gcloud components
+            ~/google-cloud-sdk/bin/gcloud --quiet components install app-engine-java
+            ~/google-cloud-sdk/bin/gcloud --quiet components update            
+            ~/google-cloud-sdk/bin/gcloud --quiet components list
+            # retrieve our gcloud service account from the CircleCI environment
+            echo $GOOGLE_AUTH | base64 --decode --ignore-garbage > ~/gcp-key.json
+            ~/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file  ~/gcp-key.json      
+            # set the gcloud config environment like current project
+            ~/google-cloud-sdk/bin/gcloud --quiet config set project $GOOGLE_PROJECT_ID     
+            # don't need right now.
+            #gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}                
+
+      # Download and cache application dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "pom.xml" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run: mvn dependency:go-offline
+
+      - save_cache:
+          key: v1-dependencies-{{ checksum "pom.xml" }}
+          paths:
+            - ~/.m2 
+  build:
+    docker:
+      # Specify the circleci build base image here.    
+      # note: can't use this gcloud image since it doesn't have maven and likely jdk8.  should create custom to combine the 2 images.
+      #- image: google/cloud-sdk
+      - image: circleci/openjdk:8-jdk      
     working_directory: ~/repo
 
     environment:
@@ -38,8 +97,6 @@ jobs:
             #gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
             #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
                 
-      # Get the code    
-      - checkout
 
       # Download and cache dependencies
       - restore_cache:
@@ -56,7 +113,7 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
           
       # Build
-      - run: mvn -DskipTests=true appengine:stage
+      - run: mvn -DskipTests=true appengine:stage  
 
   deploy-dev:  
     machine:
@@ -73,12 +130,76 @@ jobs:
       # run tests!
       #- run: mvn integration-test
 
+  deploy-uat:  
+    machine:
+        enabled: true
+    working_directory: ~/repo
+    steps:        
+      # Deploy
+      - run: 
+          name: deploy
+          command: |
+            cd target/appengine-staging
+            ~/google-cloud-sdk/bin/gcloud app deploy app.yaml
+
+  deploy-loadtest:  
+    machine:
+        enabled: true
+    working_directory: ~/repo
+    steps:        
+      # Deploy
+      - run: 
+          name: deploy
+          command: |
+            cd target/appengine-staging
+            ~/google-cloud-sdk/bin/gcloud app deploy app.yaml
+            
+  deploy-prod:  
+    machine:
+        enabled: true
+    working_directory: ~/repo
+    steps:        
+      # Deploy
+      - run: 
+          name: deploy
+          command: |
+            cd target/appengine-staging
+            ~/google-cloud-sdk/bin/gcloud app deploy app.yaml
 workflows:
   version: 2
   build-deploy-promote:
     jobs:    
-      - build
+      - checkout_code
+      - setup_dependencies:      
+          requires:
+            - checkout_code
+      - build:      
+          requires:
+            - setup_dependencies            
       - deploy-dev:      
           requires:        
             - build
+            
+      - hold-uat:      
+          type: approval
+          requires:
+            - build
+      - hold-loadtest:      
+          type: approval
+          requires:
+            - build
+      - hold-prod:      
+          type: approval
+          requires:
+            - build
+
+      - deploy-uat:      
+          requires:        
+            - hold-uat
+      - deploy-loadtest:      
+          requires:        
+            - hold-loadtest
+      - deploy-prod:      
+          requires:        
+            - hold-prod
       
