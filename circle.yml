@@ -67,6 +67,7 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
           paths:
             - ~/.m2 
+            - ~/google-cloud-sdk
   build:
     docker:
       # Specify the circleci build base image here.    
