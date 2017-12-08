@@ -158,6 +158,15 @@ jobs:
       - run: 
           name: deploy
           command: |
+            # retrieve our gcloud service account from the CircleCI environment
+            echo $GOOGLE_AUTH | base64 --decode --ignore-garbage > ~/gcp-key.json
+            ~/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file  ~/gcp-key.json      
+            # set the gcloud config environment like current project
+            ~/google-cloud-sdk/bin/gcloud --quiet config set project $GOOGLE_PROJECT_ID     
+            # don't need right now.
+            #gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}                
+          
             cd target/appengine-staging
             ~/google-cloud-sdk/bin/gcloud app deploy app.yaml
       
