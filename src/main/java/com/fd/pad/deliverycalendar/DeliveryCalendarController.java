@@ -3,7 +3,6 @@
  */
 package com.fd.pad.deliverycalendar;
 
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,7 +14,7 @@ import com.fd.pad.deliverycalendar.dao.ProductDAO;
  * 
  * @author e019904
  */
-@SpringBootApplication
+//@SpringBootApplication
 @RestController
 public class DeliveryCalendarController 
 {

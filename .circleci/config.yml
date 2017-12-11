@@ -51,7 +51,7 @@ jobs:
           paths:
             - ~/.m2 
 
-      - run: mvn -DskipTests=true appengine:stage  
+      - run: mvn appengine:stage  
 
       - save_cache:
           key: v1-assets-{{ .Environment.CIRCLE_SHA1 }}
@@ -76,7 +76,7 @@ jobs:
           keys:
             - v1-assets-{{ .Environment.CIRCLE_SHA1 }}
   
-      - run:  mvn test
+      - run:  mvn test -DskipTests=false
   
   integration-test:
     machine:
@@ -96,7 +96,7 @@ jobs:
           keys:
             - v1-assets-{{ .Environment.CIRCLE_SHA1 }}
   
-      - run:  mvn integration-test
+      - run:  mvn verify
 
   deploy-dev:  
     machine:
