@@ -26,8 +26,6 @@ jobs:
       - run: 
           name: Download/update/setup Google App Engine SDK
           command: |
-            ls -al
-            ls -al ~/
             # download the gcloud sdk 
             #curl -o ~/google-cloud-sdk.zip https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip
             #unzip -q -d ~/ ~/google-cloud-sdk.zip
@@ -48,8 +46,8 @@ jobs:
       - save_cache:
           key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
           paths:
-            - /opt/google-cloud-sdk
-            - /.config
+            #- /opt/google-cloud-sdk
+            - ~/.config
 
       # Download and cache application dependencies
       - restore_cache:
@@ -100,6 +98,7 @@ jobs:
       - run: 
           name: deploy
           command: |
+            gcloud info
             # retrieve our gcloud service account from the CircleCI environment
             echo $GOOGLE_AUTH | base64 --decode --ignore-garbage > ~/gcp-key.json
             ~/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file  ~/gcp-key.json      
