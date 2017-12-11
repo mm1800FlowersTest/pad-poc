@@ -12,14 +12,14 @@ jobs:
     environment:      
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m    
-    steps:
-       # Get the code    
-      - checkout
-      - save_cache:
-          key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
-          paths:
-            - ~/repo
-            
+     # Get the code    
+    checkout:
+      post:
+        - save_cache:
+            key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+            paths:
+              - ~/repo
+    steps:            
       - run: 
           name: Setup Google App Engine SDK
           command: |
@@ -58,25 +58,34 @@ jobs:
           paths:
             - ~/repo/target/appengine-staging
 
+      - store_artifacts:
+          path: target/appengine-staging
+
   unit-test:
-    machine:
-        enabled: true
+    docker:
+      - image: mmosttler/circleci_openjdk_gcloud:8u151-jdk-gcloud-182      
     working_directory: ~/repo
     steps:        
       - restore_cache:
-          keys:
+          key:
             - v1-repo-{{ .Environment.CIRCLE_SHA1 }}
       - restore_cache:
-          keys:
+          key:
             - v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
       - restore_cache:
-          keys:
+          key:
             - v1-dependencies-{{ checksum "pom.xml" }}
       - restore_cache:
-          keys:
+          key:
             - v1-assets-{{ .Environment.CIRCLE_SHA1 }}
   
-      - run:  mvn test -DskipTests=false
+      #- run:  mvn test -DskipTests=false
+    test:
+      override:
+        - mvn test -DskipTests=false
+      post:
+        - mkdir -p $CIRCLE_TEST_REPORTS/junit/
+        - find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
   
   integration-test:
     docker:
@@ -84,19 +93,25 @@ jobs:
     working_directory: ~/repo
     steps:        
       - restore_cache:
-          keys:
+          key:
             - v1-repo-{{ .Environment.CIRCLE_SHA1 }}
       - restore_cache:
-          keys:
+          key:
             - v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
       - restore_cache:
-          keys:
+          key:
             - v1-dependencies-{{ checksum "pom.xml" }}
       - restore_cache:
-          keys:
+          key:
             - v1-assets-{{ .Environment.CIRCLE_SHA1 }}
   
-      - run:  mvn verify
+      #- run:  mvn verify
+    test:
+      override:
+        - mvn verify
+      post:
+        - mkdir -p $CIRCLE_TEST_REPORTS/junit/
+        - find . -type f -regex ".*/target/failsafe-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
 
   deploy-dev:  
     machine:
@@ -104,43 +119,39 @@ jobs:
     working_directory: ~/repo
     steps:        
       - restore_cache:
-          keys:
+          key:
             - v1-repo-{{ .Environment.CIRCLE_SHA1 }}
       - restore_cache:
-          keys:
+          key:
             - v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
       - restore_cache:
-          keys:
+          key:
             - v1-dependencies-{{ checksum "pom.xml" }}
       - restore_cache:
-          keys:
+          key:
             - v1-assets-{{ .Environment.CIRCLE_SHA1 }}
       # Deploy
-      - run: 
+      - deploy: 
           name: deploy
           command: |
-            cd target/appengine-staging
-            gcloud app deploy app.yaml
+            gcloud app deploy target/appengine-staging/app.yaml
       
-      # run tests!
-      #- run: mvn integration-test
-
   deploy-uat:  
     machine:
         enabled: true
     working_directory: ~/repo
     steps:        
       - restore_cache:
-          keys:
+          key:
             - v1-repo-{{ .Environment.CIRCLE_SHA1 }}
       - restore_cache:
-          keys:
+          key:
             - v1-dependencies-{{ checksum "pom.xml" }}
       - restore_cache:
-          keys:
+          key:
             - v1-assets-{{ .Environment.CIRCLE_SHA1 }}
       # Deploy
-      - run: 
+      - deploy: 
           name: deploy
           command: |
             cd target/appengine-staging
@@ -152,16 +163,16 @@ jobs:
     working_directory: ~/repo
     steps:        
       - restore_cache:
-          keys:
+          key:
             - v1-repo-{{ .Environment.CIRCLE_SHA1 }}
       - restore_cache:
-          keys:
+          key:
             - v1-dependencies-{{ checksum "pom.xml" }}
       - restore_cache:
-          keys:
+          key:
             - v1-assets-{{ .Environment.CIRCLE_SHA1 }}
       # Deploy
-      - run: 
+      - deploy: 
           name: deploy
           command: |
             cd target/appengine-staging
@@ -173,16 +184,16 @@ jobs:
     working_directory: ~/repo
     steps:        
       - restore_cache:
-          keys:
+          key:
             - v1-repo-{{ .Environment.CIRCLE_SHA1 }}
       - restore_cache:
-          keys:
+          key:
             - v1-dependencies-{{ checksum "pom.xml" }}
       - restore_cache:
-          keys:
+          key:
             - v1-assets-{{ .Environment.CIRCLE_SHA1 }}
       # Deploy
-      - run: 
+      - deploy: 
           name: deploy
           command: |
             cd target/appengine-staging
