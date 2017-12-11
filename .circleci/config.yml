@@ -26,6 +26,8 @@ jobs:
       - run: 
           name: Download/update/setup Google App Engine SDK
           command: |
+            ls -al
+            ls -al ~/
             # download the gcloud sdk 
             #curl -o ~/google-cloud-sdk.zip https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip
             #unzip -q -d ~/ ~/google-cloud-sdk.zip
