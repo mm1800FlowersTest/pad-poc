@@ -79,8 +79,8 @@ jobs:
       - run:  mvn test -DskipTests=false
   
   integration-test:
-    machine:
-        enabled: true
+    docker:
+      - image: mmosttler/circleci_openjdk_gcloud:8u151-jdk-gcloud-182      
     working_directory: ~/repo
     steps:        
       - restore_cache:
