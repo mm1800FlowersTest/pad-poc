@@ -6,10 +6,7 @@ version: 2
 jobs:
   build:
     docker:
-      # Specify the circleci build base image here.    
-      # note: can't use this gcloud image since it doesn't have maven and likely jdk8.  should create custom to combine the 2 images.
-      #- image: google/cloud-sdk
-      #- image: circleci/openjdk:8u151-jdk
+      # Specify the build base image here.    
       - image: mmosttler/circleci_openjdk_gcloud:8u151-jdk-gcloud-182      
     working_directory: ~/repo
     environment:      
@@ -54,19 +51,52 @@ jobs:
           paths:
             - ~/.m2 
 
-      #- restore_cache:
-      #    keys:
-      #      - v1-repo-{{ .Environment.CIRCLE_SHA1 }}
-      #- restore_cache:
-      #    keys:
-      #      - v1-dependencies-{{ checksum "pom.xml" }}
-
       - run: mvn -DskipTests=true appengine:stage  
 
       - save_cache:
           key: v1-assets-{{ .Environment.CIRCLE_SHA1 }}
           paths:
             - ~/repo/target/appengine-staging
+
+  unit-test:
+    machine:
+        enabled: true
+    working_directory: ~/repo
+    steps:        
+      - restore_cache:
+          keys:
+            - v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+      - restore_cache:
+          keys:
+            - v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "pom.xml" }}
+      - restore_cache:
+          keys:
+            - v1-assets-{{ .Environment.CIRCLE_SHA1 }}
+  
+      - run:  mvn test
+  
+  integration-test:
+    machine:
+        enabled: true
+    working_directory: ~/repo
+    steps:        
+      - restore_cache:
+          keys:
+            - v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+      - restore_cache:
+          keys:
+            - v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "pom.xml" }}
+      - restore_cache:
+          keys:
+            - v1-assets-{{ .Environment.CIRCLE_SHA1 }}
+  
+      - run:  mvn integration-test
 
   deploy-dev:  
     machine:
@@ -114,7 +144,7 @@ jobs:
           name: deploy
           command: |
             cd target/appengine-staging
-            gcloud app deploy app.yaml
+            gcloud app deploy app.yaml --no-promote --no-stop-previous-version
 
   deploy-loadtest:  
     machine:
@@ -161,15 +191,21 @@ workflows:
   version: 2
   build-deploy-promote:
     jobs:    
-      - build      
+      - build
+      - unit-test:
+          requires:
+            - build
+      - integration-test:
+          requires:
+            - build            
       - deploy-dev:
           requires:        
-            - build
+            - unit-test
+            - integration-test
             
       - hold-uat:
           type: approval
           requires:
-            - build
             - deploy-dev
       - deploy-uat:      
           requires:        
@@ -178,7 +214,8 @@ workflows:
       - hold-loadtest:      
           type: approval
           requires:
-            - build
+            - unit-test
+            - integration-test
       - deploy-loadtest:      
           requires:        
             - hold-loadtest
@@ -186,7 +223,8 @@ workflows:
       - hold-prod:
           type: approval
           requires:
-            - build
+            - unit-test
+            - integration-test
             - deploy-uat
             - deploy-loadtest 
       - deploy-prod:
