@@ -24,16 +24,8 @@ jobs:
             - ~/repo
             
       - run: 
-          name: Download/update/setup Google App Engine SDK
+          name: Setup Google App Engine SDK
           command: |
-            # download the gcloud sdk 
-            #curl -o ~/google-cloud-sdk.zip https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip
-            #unzip -q -d ~/ ~/google-cloud-sdk.zip
-            #rm ~/google-cloud-sdk.zip
-            # update gcloud components
-            #~/google-cloud-sdk/bin/gcloud --quiet components install app-engine-java
-            #~/google-cloud-sdk/bin/gcloud --quiet components update            
-            #~/google-cloud-sdk/bin/gcloud --quiet components list
             # retrieve our gcloud service account from the CircleCI environment
             echo $GOOGLE_AUTH | base64 --decode --ignore-garbage > ~/gcp-key.json
             gcloud auth activate-service-account --key-file  ~/gcp-key.json      
@@ -46,8 +38,7 @@ jobs:
       - save_cache:
           key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
           paths:
-            #- /opt/google-cloud-sdk
-            - ~/.config
+            - ~/.config/gcloud
 
       # Download and cache application dependencies
       - restore_cache:
@@ -98,18 +89,8 @@ jobs:
       - run: 
           name: deploy
           command: |
-            gcloud info
-            # retrieve our gcloud service account from the CircleCI environment
-            echo $GOOGLE_AUTH | base64 --decode --ignore-garbage > ~/gcp-key.json
-            ~/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file  ~/gcp-key.json      
-            # set the gcloud config environment like current project
-            ~/google-cloud-sdk/bin/gcloud --quiet config set project $GOOGLE_PROJECT_ID     
-            # don't need right now.
-            #gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}                
-          
             cd target/appengine-staging
-            ~/google-cloud-sdk/bin/gcloud app deploy app.yaml
+            gcloud app deploy app.yaml
       
       # run tests!
       #- run: mvn integration-test
@@ -133,7 +114,7 @@ jobs:
           name: deploy
           command: |
             cd target/appengine-staging
-            ~/google-cloud-sdk/bin/gcloud app deploy app.yaml
+            gcloud app deploy app.yaml
 
   deploy-loadtest:  
     machine:
@@ -154,7 +135,7 @@ jobs:
           name: deploy
           command: |
             cd target/appengine-staging
-            ~/google-cloud-sdk/bin/gcloud app deploy app.yaml
+            gcloud app deploy app.yaml
             
   deploy-prod:  
     machine:
@@ -175,7 +156,7 @@ jobs:
           name: deploy
           command: |
             cd target/appengine-staging
-            ~/google-cloud-sdk/bin/gcloud app deploy app.yaml
+            gcloud app deploy app.yaml
 workflows:
   version: 2
   build-deploy-promote:
