@@ -21,7 +21,7 @@ jobs:
       - save_cache:
           key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
           paths:
-            - /home/circleci/repo
+            - ~/repo
             
       - run: 
           name: Download/update/setup Google App Engine SDK
