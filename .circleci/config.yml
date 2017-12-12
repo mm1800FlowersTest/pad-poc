@@ -88,6 +88,10 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
   
       - run:
+          name: Start DataStore
+          command: gcloud beta emulators datastore start
+          background: true
+      - run:
           name: Run Integration Tests
           command: mvn verify
       - run:
