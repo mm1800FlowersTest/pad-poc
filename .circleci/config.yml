@@ -86,6 +86,8 @@ jobs:
           at: ~/workspace
       - restore_cache:
           key: v1-dependencies-{{ checksum "pom.xml" }}
+      - restore_cache:
+          key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
   
       - run:
           name: Start DataStore
