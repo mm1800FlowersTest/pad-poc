@@ -8,9 +8,6 @@ defaults: &defaults
     docker:
       # Specify the build base image here.    
       - image: mmosttler/circleci_openjdk_gcloud:8u151-jdk-gcloud-182      
-    environment:      
-      HOME: /home/circleci
-      REPO: $HOME/repo
 
 jobs:
   build:
@@ -21,11 +18,11 @@ jobs:
      # Get the code    
     steps:            
       - checkout:
-          path: ${REPO}
+          path: ~/repo
       - save_cache:
           key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
           paths:
-            - ${REPO}
+            - ~/repo
 
       - run: 
           name: Setup Google App Engine SDK
@@ -47,28 +44,28 @@ jobs:
       # Download and cache application dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "${REPO}/pom.xml" }}
+            - v1-dependencies-{{ checksum "~/repo/pom.xml" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
       - run: mvn dependency:go-offline
 
       - save_cache:
-          key: v1-dependencies-{{ checksum "$REPO/pom.xml" }}
+          key: v1-dependencies-{{ checksum "~/repo/pom.xml" }}
           paths:
-            - $HOME/.m2 
+            - ~/.m2 
 
       - run: mvn appengine:stage  
 
       - run: 
           command: |
             ls -al
-            ls -al $REPO
+            ls -al ~/repo
       
       - save_cache:
           key: v1-assets-{{ .Environment.CIRCLE_SHA1 }}
           paths:
-            - $REPO/target/appengine-staging
+            - ~/repo/target/appengine-staging
 
       - persist_to_workspace:
           root: /home/circleci
