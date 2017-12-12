@@ -85,8 +85,8 @@ jobs:
           key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
       #- restore_cache:
       #    key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
-      #- restore_cache:
-      #    key: v1-dependencies-{{ checksum "pom.xml" }}
+      - restore_cache:
+          key: v1-dependencies-{{ checksum "pom.xml" }}
       #- restore_cache:
       #    key: v1-assets-{{ .Environment.CIRCLE_SHA1 }}
   
