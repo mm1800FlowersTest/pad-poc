@@ -3,18 +3,23 @@
 # Check https://circleci.com/docs/2.0/language-java/ for more details
 #
 version: 2
-jobs:
-  build:
+defaults: &defaults
+    working_directory: ~
     docker:
       # Specify the build base image here.    
       - image: mmosttler/circleci_openjdk_gcloud:8u151-jdk-gcloud-182      
-    working_directory: ~/repo
+
+
+jobs:
+  build:
+    <<: *defaults
     environment:      
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m    
      # Get the code    
     steps:            
-      - checkout
+      - checkout:
+          path: ~/repo
       - save_cache:
           key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
           paths:
@@ -53,13 +58,18 @@ jobs:
 
       - run: mvn appengine:stage  
 
+      - run: 
+          command: |
+            ls -al
+            ls -al ~/repo 
+      
       - save_cache:
           key: v1-assets-{{ .Environment.CIRCLE_SHA1 }}
           paths:
             - ~/repo/target/appengine-staging
 
       - persist_to_workspace:
-          root: /tmp/workspace
+          root: ~
           paths:
             - target/appengine-staging/*
             #- ~/.config/gcloud      
