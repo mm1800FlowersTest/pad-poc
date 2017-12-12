@@ -129,6 +129,8 @@ jobs:
       - deploy: 
           name: Deploy to DEV
           command: gcloud app deploy target/appengine-staging/app.yaml
+      - store_artifacts:
+          path: ~/.config/gcloud/logs/*.log         
       
   deploy-uat:  
     <<: *defaults
