@@ -13,13 +13,13 @@ jobs:
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m    
      # Get the code    
-    checkout:
-      post:
-        - save_cache:
-            key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
-            paths:
-              - ~/repo
     steps:            
+      - checkout
+      - save_cache:
+          key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - ~/repo
+
       - run: 
           name: Setup Google App Engine SDK
           command: |
@@ -30,8 +30,8 @@ jobs:
             gcloud --quiet config set project $GOOGLE_PROJECT_ID     
             # don't need right now.
             #gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}                
-
+            #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
+            
       - save_cache:
           key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
           paths:
@@ -79,13 +79,19 @@ jobs:
           key:
             - v1-assets-{{ .Environment.CIRCLE_SHA1 }}
   
-      #- run:  mvn test -DskipTests=false
-    test:
-      override:
-        - mvn test -DskipTests=false
-      post:
-        - mkdir -p $CIRCLE_TEST_REPORTS/junit/
-        - find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+      - run:
+          name: Run Unit Tests
+          command: mvn test -DskipTests=false
+      - run:
+          name: Save test results 
+          command: |
+            mkdir -p ~/junit/ 
+            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/junit
+      - store_artifacts:
+          path: ~/junit         
   
   integration-test:
     docker:
@@ -105,13 +111,19 @@ jobs:
           key:
             - v1-assets-{{ .Environment.CIRCLE_SHA1 }}
   
-      #- run:  mvn verify
-    test:
-      override:
-        - mvn verify
-      post:
-        - mkdir -p $CIRCLE_TEST_REPORTS/junit/
-        - find . -type f -regex ".*/target/failsafe-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+      - run:
+          name: Run Integration Tests
+          command: mvn verify
+      - run:
+          name: Save test results 
+          command: |
+            mkdir -p ~/junit/ 
+            find . -type f -regex ".*/target/failsafe-reports/.*xml" -exec cp {} ~/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/junit
+      - store_artifacts:
+          path: ~/junit         
 
   deploy-dev:  
     machine:
