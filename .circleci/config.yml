@@ -100,6 +100,8 @@ jobs:
       - attach-workspace:
           at: ~/workspace
       - restore_cache:
+          key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
+      - restore_cache:
           key: v1-dependencies-{{ checksum "pom.xml" }}
   
       - run:
@@ -126,8 +128,7 @@ jobs:
           
       - deploy: 
           name: Deploy to DEV
-          command: |
-            gcloud app deploy target/appengine-staging/app.yaml
+          command: gcloud app deploy target/appengine-staging/app.yaml
       
   deploy-uat:  
     <<: *defaults
@@ -139,8 +140,7 @@ jobs:
           
       - deploy: 
           name: Deploy to UAT
-          command: |
-            gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version
+          command: gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version
 
   deploy-loadtest:  
     <<: *defaults
@@ -152,8 +152,7 @@ jobs:
 
       - deploy: 
           name: Deploy to LOAD TEST
-          command: |
-            gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version
+          command: gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version
             
   deploy-prod:  
     <<: *defaults
@@ -165,9 +164,7 @@ jobs:
 
       - deploy: 
           name: Deploy to PROD
-          command: |
-            cd target/appengine-staging
-            gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version
+          command: gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version
 workflows:
   version: 2
   build-deploy-promote:
