@@ -183,9 +183,15 @@ workflows:
             
       - hold-uat:
           type: approval
+          filters:
+            tags:
+              only: /UAT/
           requires:
             - deploy-dev
       - deploy-uat:      
+          filters:
+            tags:
+              only: /UAT/
           requires:        
             - hold-uat
 
