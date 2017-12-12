@@ -4,7 +4,7 @@
 #
 version: 2
 defaults: &defaults
-    working_directory: /home/circleci
+    working_directory: ~/workspace
     docker:
       # Specify the build base image here.    
       - image: mmosttler/circleci_openjdk_gcloud:8u151-jdk-gcloud-182      
@@ -21,7 +21,7 @@ jobs:
       - save_cache:
           key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
           paths:
-            - ~/src
+            - ~/workspace
 
       - run: 
           name: Setup Google App Engine SDK
@@ -47,33 +47,25 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
-      - run: 
-          name: Get dependencies
-          command: |
-            #cd ~/repo
-            mvn dependency:go-offline
+      - run: mvn dependency:go-offline
 
       - save_cache:
           key: v1-dependencies-{{ checksum "pom.xml" }}
           paths:
             - ~/.m2 
 
-      - run:   
-          name: Compile and Package 
-          command: |
-            #cd ~/repo
-            mvn appengine:stage
+      - run: mvn appengine:stage
 
       - save_cache:
           key: v1-assets-{{ .Environment.CIRCLE_SHA1 }}
           paths:
-            - ~/target/appengine-staging
+            - ~/workspace/target/appengine-staging
 
       - persist_to_workspace:
-          root: /home/circleci
+          root: ~/workspace
           paths:
             - target/appengine-staging/*
-            - .config/gcloud/*
+            - pom.xml            
       
       #- store_artifacts:
       #    path: target/appengine-staging
@@ -81,17 +73,17 @@ jobs:
   unit-test:
     <<: *defaults
     steps:        
-      - restore_cache:
-          key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+      - attach-workspace:
+          at: ~/workspace
+
+      #- restore_cache:
+      #    key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
       #- restore_cache:
       #    key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
       - restore_cache:
           key: v1-dependencies-{{ checksum "pom.xml" }}
       #- restore_cache:
       #    key: v1-assets-{{ .Environment.CIRCLE_SHA1 }}
-  
-      - attach-workspace:
-          at: /home/circleci
   
       - run:
           name: Run Unit Tests
@@ -101,12 +93,12 @@ jobs:
           name: Save test results 
           command: |
             mkdir -p ~/junit/ 
-            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/junit/ \;
           when: always
       - store_test_results:
-          path: $CIRCLE_TEST_REPORTS/junit
+          path: ~/junit
       - store_artifacts:
-          path: $CIRCLE_TEST_REPORTS/junit         
+          path: ~/junit         
   
   integration-test:
     <<: *defaults
