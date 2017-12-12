@@ -66,7 +66,11 @@ jobs:
           paths:
             - pom.xml
             - .springBeans
-            - src/*            
+            - src/*
+            - target/classes/*
+            - target/test-classes/*
+            - target/PAD-DeliveryCalendar-0.0.1-SNAPSHOT
+            - target/PAD-DeliveryCalendar-0.0.1-SNAPSHOT.war
             - target/appengine-staging/*
       
       #- store_artifacts:
