@@ -17,12 +17,11 @@ jobs:
       MAVEN_OPTS: -Xmx3200m    
      # Get the code    
     steps:            
-      - checkout:
-          path: ~/repo
+      - checkout
       - save_cache:
           key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
           paths:
-            - ~/repo
+            - ~/.
 
       - run: 
           name: Setup Google App Engine SDK
@@ -39,41 +38,41 @@ jobs:
       - save_cache:
           key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
           paths:
-            - $HOME/.config/gcloud
+            - ~/.config/gcloud
 
       # Download and cache application dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "~/repo/pom.xml" }}
+            - v1-dependencies-{{ checksum "pom.xml" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
       - run: 
           name: Get dependencies
           command: |
-            cd ~/repo
+            #cd ~/repo
             mvn dependency:go-offline
 
       - save_cache:
-          key: v1-dependencies-{{ checksum "~/repo/pom.xml" }}
+          key: v1-dependencies-{{ checksum "pom.xml" }}
           paths:
             - ~/.m2 
 
       - run:   
           name: Compile and Package 
           command: |
-            cd ~/repo
+            #cd ~/repo
             mvn appengine:stage
 
       - save_cache:
           key: v1-assets-{{ .Environment.CIRCLE_SHA1 }}
           paths:
-            - ~/repo/target/appengine-staging
+            - ~/target/appengine-staging
 
       - persist_to_workspace:
           root: /home/circleci
           paths:
-            - repo/target/appengine-staging/*
+            - target/appengine-staging/*
             - .config/gcloud/*
       
       #- store_artifacts:
@@ -82,8 +81,8 @@ jobs:
   unit-test:
     <<: *defaults
     steps:        
-      #- restore_cache:
-      #    key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+      - restore_cache:
+          key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
       #- restore_cache:
       #    key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
       #- restore_cache:
