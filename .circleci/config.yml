@@ -157,14 +157,26 @@ workflows:
   version: 2
   build-deploy-promote:
     jobs:    
-      - build
+      - build:
+          filters:
+            tags:
+              only: /.*/
       - unit-test:
+          filters:
+            tags:
+              only: /.*/
           requires:
             - build
       - integration-test:
+          filters:
+            tags:
+              only: /.*/
           requires:
             - build            
       - deploy-dev:
+          filters:
+            tags:
+              only: /.*/
           requires:        
             - unit-test
             - integration-test
