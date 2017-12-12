@@ -8,7 +8,7 @@ import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
 import com.google.cloud.datastore.Entity;
 
-public class PadDeliveryCalendarDatastoreTest 
+public class PadDeliveryCalendarDatastoreIntegrationTest 
 {
 	@Test
 	public void test1() throws IOException, InterruptedException 
