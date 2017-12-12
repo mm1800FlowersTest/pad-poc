@@ -77,20 +77,12 @@ jobs:
     steps:        
       - attach-workspace:
           at: ~/workspace
-
-      #- restore_cache:
-      #    key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
-      #- restore_cache:
-      #    key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
       - restore_cache:
           key: v1-dependencies-{{ checksum "pom.xml" }}
-      #- restore_cache:
-      #    key: v1-assets-{{ .Environment.CIRCLE_SHA1 }}
   
       - run:
           name: Run Unit Tests
-          command: |
-            mvn test -DskipTests=false
+          command: mvn test -DskipTests=false
       - run:
           name: Save test results 
           command: |
@@ -107,14 +99,8 @@ jobs:
     steps:        
       - attach-workspace:
           at: ~/workspace
-      #- restore_cache:
-      #    key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
-      #- restore_cache:
-      #    key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
       - restore_cache:
           key: v1-dependencies-{{ checksum "pom.xml" }}
-      #- restore_cache:
-      #    key: v1-assets-{{ .Environment.CIRCLE_SHA1 }}
   
       - run:
           name: Run Integration Tests
@@ -131,87 +117,57 @@ jobs:
           path: ~/junit         
 
   deploy-dev:  
-    machine:
-        enabled: true
-    working_directory: ~/repo
+    <<: *defaults
     steps:        
-      #- restore_cache:
-      #    key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+      - attach-workspace:
+          at: ~/workspace
       - restore_cache:
           key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
-      #- restore_cache:
-      #    key: v1-dependencies-{{ checksum "pom.xml" }}
-      - restore_cache:
-          key: v1-assets-{{ .Environment.CIRCLE_SHA1 }}
           
-      # Deploy
       - deploy: 
-          name: deploy
+          name: Deploy to DEV
           command: |
             gcloud app deploy target/appengine-staging/app.yaml
       
   deploy-uat:  
-    machine:
-        enabled: true
-    working_directory: ~/repo
+    <<: *defaults
     steps:        
-      #- restore_cache:
-      #    key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+      - attach-workspace:
+          at: ~/workspace
       - restore_cache:
           key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
-      #- restore_cache:
-      #    key: v1-dependencies-{{ checksum "pom.xml" }}
-      - restore_cache:
-          key: v1-assets-{{ .Environment.CIRCLE_SHA1 }}
           
-      # Deploy
       - deploy: 
-          name: deploy
+          name: Deploy to UAT
           command: |
-            cd target/appengine-staging
-            gcloud app deploy app.yaml --no-promote --no-stop-previous-version
+            gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version
 
   deploy-loadtest:  
-    machine:
-        enabled: true
-    working_directory: ~/repo
+    <<: *defaults
     steps:        
-      #- restore_cache:
-      #    key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+      - attach-workspace:
+          at: ~/workspace
       - restore_cache:
           key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
-      #- restore_cache:
-      #    key: v1-dependencies-{{ checksum "pom.xml" }}
-      - restore_cache:
-          key: v1-assets-{{ .Environment.CIRCLE_SHA1 }}
 
-      # Deploy
       - deploy: 
-          name: deploy
+          name: Deploy to LOAD TEST
           command: |
-            cd target/appengine-staging
-            gcloud app deploy app.yaml
+            gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version
             
   deploy-prod:  
-    machine:
-        enabled: true
-    working_directory: ~/repo
+    <<: *defaults
     steps:        
-      #- restore_cache:
-      #    key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+      - attach-workspace:
+          at: ~/workspace
       - restore_cache:
           key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
-      #- restore_cache:
-      #    key: v1-dependencies-{{ checksum "pom.xml" }}
-      - restore_cache:
-          key: v1-assets-{{ .Environment.CIRCLE_SHA1 }}
 
-      # Deploy
       - deploy: 
-          name: deploy
+          name: Deploy to PROD
           command: |
             cd target/appengine-staging
-            gcloud app deploy app.yaml
+            gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version
 workflows:
   version: 2
   build-deploy-promote:
