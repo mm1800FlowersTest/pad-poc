@@ -21,11 +21,11 @@ jobs:
      # Get the code    
     steps:            
       - checkout:
-          path: $REPO
+          path: ${REPO}
       - save_cache:
           key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
           paths:
-            - $REPO
+            - ${REPO}
 
       - run: 
           name: Setup Google App Engine SDK
@@ -47,7 +47,7 @@ jobs:
       # Download and cache application dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "$REPO/pom.xml" }}
+            - v1-dependencies-{{ checksum "${REPO}/pom.xml" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
