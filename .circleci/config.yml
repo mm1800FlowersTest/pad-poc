@@ -67,11 +67,7 @@ jobs:
             - pom.xml
             - .springBeans
             - src/*
-            - target/classes/*
-            - target/test-classes/*
-            - target/PAD-DeliveryCalendar-0.0.1-SNAPSHOT
-            - target/PAD-DeliveryCalendar-0.0.1-SNAPSHOT.war
-            - target/appengine-staging/*
+            - target/*
       
       #- store_artifacts:
       #    path: target/appengine-staging
@@ -103,8 +99,8 @@ jobs:
     steps:        
       - attach-workspace:
           at: ~/workspace
-      - restore_cache:
-          key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
+      #- restore_cache:
+      #    key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
       - restore_cache:
           key: v1-dependencies-{{ checksum "pom.xml" }}
   
