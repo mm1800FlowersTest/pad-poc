@@ -62,7 +62,7 @@ jobs:
           root: /tmp/workspace
           paths:
             - target/appengine-staging/*
-            - ../.config/gcloud      
+            #- ~/.config/gcloud      
       
       #- store_artifacts:
       #    path: target/appengine-staging
