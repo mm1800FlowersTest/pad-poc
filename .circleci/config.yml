@@ -45,14 +45,14 @@ jobs:
       # Download and cache application dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "pom.xml" }}
+            - v1-dependencies-{{ checksum "~/pom.xml" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
       - run: mvn dependency:go-offline
 
       - save_cache:
-          key: v1-dependencies-{{ checksum "pom.xml" }}
+          key: v1-dependencies-{{ checksum "~/pom.xml" }}
           paths:
             - ~/.m2 
 
@@ -72,7 +72,7 @@ jobs:
           root: /home/circleci
           paths:
             - repo/target/appengine-staging/*
-            #- ~/.config/gcloud      
+            - .config/gcloud/*
       
       #- store_artifacts:
       #    path: target/appengine-staging
@@ -90,7 +90,7 @@ jobs:
       #    key: v1-assets-{{ .Environment.CIRCLE_SHA1 }}
   
       - attach-workspace:
-          at: ~
+          at: /home/circleci
   
       - run:
           name: Run Unit Tests
