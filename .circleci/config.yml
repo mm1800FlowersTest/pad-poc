@@ -59,13 +59,12 @@ jobs:
           paths:
             - ~/.m2 
 
-      - run: mvn appengine:stage  
-
-      - run: 
+      - run:   
+          name: Compile and Package 
           command: |
-            ls -al
-            ls -al ~/repo
-      
+            cd ~/repo
+            mvn appengine:stage
+
       - save_cache:
           key: v1-assets-{{ .Environment.CIRCLE_SHA1 }}
           paths:
