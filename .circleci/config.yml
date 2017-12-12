@@ -64,8 +64,10 @@ jobs:
       - persist_to_workspace:
           root: ~/workspace
           paths:
+            - pom.xml
+            - .springBeans
+            - src/*            
             - target/appengine-staging/*
-            - pom.xml            
       
       #- store_artifacts:
       #    path: target/appengine-staging
@@ -103,14 +105,16 @@ jobs:
   integration-test:
     <<: *defaults
     steps:        
-      - restore_cache:
-          key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
-      - restore_cache:
-          key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
+      - attach-workspace:
+          at: ~/workspace
+      #- restore_cache:
+      #    key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+      #- restore_cache:
+      #    key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
       - restore_cache:
           key: v1-dependencies-{{ checksum "pom.xml" }}
-      - restore_cache:
-          key: v1-assets-{{ .Environment.CIRCLE_SHA1 }}
+      #- restore_cache:
+      #    key: v1-assets-{{ .Environment.CIRCLE_SHA1 }}
   
       - run:
           name: Run Integration Tests
