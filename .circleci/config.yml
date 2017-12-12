@@ -18,10 +18,6 @@ jobs:
      # Get the code    
     steps:            
       - checkout
-      - save_cache:
-          key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
-          paths:
-            - ~/workspace
 
       - run: 
           name: Setup Google App Engine SDK
@@ -33,8 +29,7 @@ jobs:
             gcloud --quiet config set project $GOOGLE_PROJECT_ID     
             # don't need right now.
             #gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
-            
+            #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}            
       - save_cache:
           key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
           paths:
@@ -46,20 +41,13 @@ jobs:
             - v1-dependencies-{{ checksum "pom.xml" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
-
       - run: mvn dependency:go-offline
-
       - save_cache:
           key: v1-dependencies-{{ checksum "pom.xml" }}
           paths:
             - ~/.m2 
 
       - run: mvn appengine:stage
-
-      - save_cache:
-          key: v1-assets-{{ .Environment.CIRCLE_SHA1 }}
-          paths:
-            - ~/workspace/target/appengine-staging
 
       - persist_to_workspace:
           root: ~/workspace
@@ -69,9 +57,6 @@ jobs:
             - src/*
             - target/*
       
-      #- store_artifacts:
-      #    path: target/appengine-staging
-
   unit-test:
     <<: *defaults
     steps:        
@@ -99,8 +84,6 @@ jobs:
     steps:        
       - attach-workspace:
           at: ~/workspace
-      #- restore_cache:
-      #    key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
       - restore_cache:
           key: v1-dependencies-{{ checksum "pom.xml" }}
   
@@ -130,7 +113,7 @@ jobs:
           name: Deploy to DEV
           command: gcloud app deploy target/appengine-staging/app.yaml
       - store_artifacts:
-          path: ~/.config/gcloud/logs/*.log         
+          path: ~/.config/gcloud/logs 
       
   deploy-uat:  
     <<: *defaults
@@ -167,6 +150,7 @@ jobs:
       - deploy: 
           name: Deploy to PROD
           command: gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version
+
 workflows:
   version: 2
   build-deploy-promote:
