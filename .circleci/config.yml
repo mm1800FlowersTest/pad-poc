@@ -71,16 +71,14 @@ jobs:
       - persist_to_workspace:
           root: ~
           paths:
-            - target/appengine-staging/*
+            - repo/target/appengine-staging/*
             #- ~/.config/gcloud      
       
       #- store_artifacts:
       #    path: target/appengine-staging
 
   unit-test:
-    docker:
-      - image: mmosttler/circleci_openjdk_gcloud:8u151-jdk-gcloud-182      
-    working_directory: ~/repo
+    <<: *defaults
     steps:        
       #- restore_cache:
       #    key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
@@ -92,7 +90,7 @@ jobs:
       #    key: v1-assets-{{ .Environment.CIRCLE_SHA1 }}
   
       - attach-workspace:
-          at: /tmp/workspace
+          at: ~
   
       - run:
           name: Run Unit Tests
@@ -110,9 +108,7 @@ jobs:
           path: $CIRCLE_TEST_REPORTS/junit         
   
   integration-test:
-    docker:
-      - image: mmosttler/circleci_openjdk_gcloud:8u151-jdk-gcloud-182      
-    working_directory: ~/repo
+    <<: *defaults
     steps:        
       - restore_cache:
           key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
