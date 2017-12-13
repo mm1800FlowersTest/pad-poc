@@ -30,15 +30,6 @@ jobs:
             # don't need right now.
             #gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
             #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}  
-            
-            comp=$(echo "$CIRCLE_REPOSITORY_URL" | sed 's/./\L&/g' | sed 's/[\.\+]/-/g')
-            echo $comp
-            
-            echo "export TEST=$(echo "$CIRCLE_REPOSITORY_URL" | sed 's/./\L&/g' | sed 's/[\.\+]/-/g')" >> $BASH_ENV
-            echo $TEST
-            echo $CIRCLE_REPOSITORY_URL | sed 's/./\L&/g' | sed 's/[\.\+]/-/g'
-            
-                      
       - save_cache:
           key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
           paths:
@@ -125,7 +116,14 @@ jobs:
           key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
       - deploy: 
           name: Deploy to DEV
-          command: gcloud app deploy target/appengine-staging/app.yaml --version v$CIRCLE_TAG-$CIRCLE_BUILD_NUM
+          command: |
+            comp=$(echo "$CIRCLE_REPOSITORY_URL" | sed 's/./\L&/g' | sed 's/[\.\+]/-/g')
+            echo $comp
+            
+            echo "export TEST=$(echo "$CIRCLE_REPOSITORY_URL" | sed 's/./\L&/g' | sed 's/[\.\+]/-/g')" >> $BASH_ENV
+            echo $TEST
+
+            gcloud app deploy target/appengine-staging/app.yaml --version v$CIRCLE_TAG-$CIRCLE_BUILD_NUM
       - store_artifacts:
           path: ~/.config/gcloud/logs 
       
@@ -147,10 +145,16 @@ jobs:
             #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}            
   
             #deploy        
-            echo "export TEST='HELLO.new+world' | sed 's/./\L&/g' | sed 's/[\.\+]/-/g'" >> $BASH_ENV
+            comp=$(echo "$CIRCLE_REPOSITORY_URL" | sed 's/./\L&/g' | sed 's/[\.\+]/-/g')
+            echo $comp
+            
+            echo "export TEST=$(echo "$CIRCLE_REPOSITORY_URL" | sed 's/./\L&/g' | sed 's/[\.\+]/-/g')" >> $BASH_ENV
             echo $TEST
+
+            GAE_TAG=$(echo "$CIRCLE_TAG" | sed 's/./\L&/g' | sed 's/[\.\+]/-/g')
+            echo $GAE_TAG
             echo $CIRCLE_TAG | sed 's/./\L&/g' | sed 's/[\.\+]/-/g'
-            gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version --version v$CIRCLE_TAG-$CIRCLE_BUILD_NUM
+            gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version --version v$GAE_TAG-$CIRCLE_BUILD_NUM
 
   deploy-loadtest:  
     <<: *defaults
