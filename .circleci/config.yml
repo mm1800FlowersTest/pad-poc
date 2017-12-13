@@ -187,12 +187,16 @@ workflows:
           filters:
             tags:
               only: /UAT/
+            branches:
+              ignore: /.*/
           requires:
             - deploy-dev
       - deploy-uat:      
           filters:
             tags:
               only: /UAT/
+            branches:
+              ignore: /.*/
           requires:        
             - unit-test
             - integration-test
@@ -201,6 +205,8 @@ workflows:
           filters:
             tags:
               only: /LOADTEST/
+            branches:
+              ignore: /.*/
           requires:        
             - unit-test
             - integration-test
@@ -210,6 +216,8 @@ workflows:
           filters:
             tags:
               only: /PROD/
+            branches:
+              ignore: /.*/
           requires:
             - unit-test
             - integration-test
@@ -218,6 +226,8 @@ workflows:
           filters:
             tags:
               only: /PROD/
+            branches:
+              ignore: /.*/
           requires:        
             - hold-prod
       
