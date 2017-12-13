@@ -26,7 +26,7 @@ jobs:
             echo $GOOGLE_AUTH | base64 --decode --ignore-garbage > ~/gcp-key.json
             gcloud auth activate-service-account --key-file  ~/gcp-key.json      
             # set the gcloud config environment like current project
-            gcloud --quiet config set project $GOOGLE_PROJECT_ID     
+            gcloud --quiet config set project $GOOGLE_PROJECT_PREFIX-dev1
             # don't need right now.
             #gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
             #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}            
@@ -116,7 +116,7 @@ jobs:
           key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
       - deploy: 
           name: Deploy to DEV
-          command: gcloud app deploy target/appengine-staging/app.yaml
+          command: gcloud app deploy target/appengine-staging/app.yaml --version $CIRCLE_TAG-$CIRCLE_BUILD_NUM
       - store_artifacts:
           path: ~/.config/gcloud/logs 
       
@@ -125,11 +125,20 @@ jobs:
     steps:        
       - attach-workspace:
           at: ~/workspace
-      - restore_cache:
-          key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
       - deploy: 
           name: Deploy to UAT
-          command: gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version
+          command: |
+            # retrieve our gcloud service account from the CircleCI environment
+            echo $GOOGLE_AUTH_UAT1 | base64 --decode --ignore-garbage > ~/gcp-key.json
+            gcloud auth activate-service-account --key-file  ~/gcp-key.json      
+            # set the gcloud config environment like current project
+            gcloud --quiet config set project $GOOGLE_PROJECT_PREFIX-uat1
+            # don't need right now.
+            #gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}            
+  
+            #deploy        
+            gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version --version $CIRCLE_TAG-$CIRCLE_BUILD_NUM
 
   deploy-loadtest:  
     <<: *defaults
@@ -140,7 +149,7 @@ jobs:
           key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
       - deploy: 
           name: Deploy to LOAD TEST
-          command: gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version
+          command: gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version --version $CIRCLE_TAG-$CIRCLE_BUILD_NUM
             
   deploy-prod:  
     <<: *defaults
@@ -151,7 +160,7 @@ jobs:
           key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
       - deploy: 
           name: Deploy to PROD
-          command: gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version
+          command: gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version --version $CIRCLE_TAG-$CIRCLE_BUILD_NUM
 
 workflows:
   version: 2
