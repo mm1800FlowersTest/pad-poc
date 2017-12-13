@@ -196,7 +196,7 @@ workflows:
       - deploy-uat:      
           filters:
             tags:
-              only: /.*\+uat.*/
+              only: /^(\d+\.\d+\.\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+(uat))?[\^\{\}]*$/
             branches:
               ignore: /.*/
           requires:        
