@@ -116,7 +116,7 @@ jobs:
           key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
       - deploy: 
           name: Deploy to DEV
-          command: gcloud app deploy target/appengine-staging/app.yaml --version $CIRCLE_TAG-$CIRCLE_BUILD_NUM
+          command: gcloud app deploy target/appengine-staging/app.yaml --version v$CIRCLE_TAG-$CIRCLE_BUILD_NUM
       - store_artifacts:
           path: ~/.config/gcloud/logs 
       
@@ -138,7 +138,7 @@ jobs:
             #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}            
   
             #deploy        
-            gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version --version $CIRCLE_TAG-$CIRCLE_BUILD_NUM
+            gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version --version v$CIRCLE_TAG-$CIRCLE_BUILD_NUM
 
   deploy-loadtest:  
     <<: *defaults
@@ -149,7 +149,7 @@ jobs:
           key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
       - deploy: 
           name: Deploy to LOAD TEST
-          command: gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version --version $CIRCLE_TAG-$CIRCLE_BUILD_NUM
+          command: gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version --version v$CIRCLE_TAG-$CIRCLE_BUILD_NUM
             
   deploy-prod:  
     <<: *defaults
@@ -160,7 +160,7 @@ jobs:
           key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
       - deploy: 
           name: Deploy to PROD
-          command: gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version --version $CIRCLE_TAG-$CIRCLE_BUILD_NUM
+          command: gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version --version v$CIRCLE_TAG-$CIRCLE_BUILD_NUM
 
 workflows:
   version: 2
