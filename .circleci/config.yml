@@ -31,7 +31,10 @@ jobs:
             #gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
             #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}  
             
-            echo "export TEST='HELLO.new+world' | sed 's/./\L&/g' | sed 's/[\.\+]/-/g'" >> $BASH_ENV
+            comp=$(echo "$CIRCLE_REPOSITORY_URL" | sed 's/./\L&/g' | sed 's/[\.\+]/-/g')
+            echo $comp
+            
+            echo "export TEST=$(echo "$CIRCLE_REPOSITORY_URL" | sed 's/./\L&/g' | sed 's/[\.\+]/-/g')" >> $BASH_ENV
             echo $TEST
             echo $CIRCLE_REPOSITORY_URL | sed 's/./\L&/g' | sed 's/[\.\+]/-/g'
             
