@@ -173,6 +173,7 @@ workflows:
               only: /.*/
           requires:
             - build            
+
       - deploy-dev:
           filters:
             tags:
@@ -193,25 +194,30 @@ workflows:
             tags:
               only: /UAT/
           requires:        
-            - hold-uat
-
-      - hold-loadtest:      
-          type: approval
-          requires:
             - unit-test
             - integration-test
+
       - deploy-loadtest:      
+          filters:
+            tags:
+              only: /LOADTEST/
           requires:        
-            - hold-loadtest
+            - unit-test
+            - integration-test
 
       - hold-prod:
           type: approval
+          filters:
+            tags:
+              only: /PROD/
           requires:
             - unit-test
             - integration-test
             - deploy-uat
-            - deploy-loadtest 
       - deploy-prod:
+          filters:
+            tags:
+              only: /PROD/
           requires:        
             - hold-prod
       
