@@ -2,12 +2,20 @@
 #
 # Check https://circleci.com/docs/2.0/language-java/ for more details
 #
+# git ls-remote |grep $(git ls-remote | grep HEAD | grep -o '^[0-9a-zA-Z]*')|grep -o '[0-9]\.[0-9]\..*'
 version: 2
-defaults: &defaults
-    working_directory: ~/workspace
-    docker:
-      # Specify the build base image here.    
-      - image: mmosttler/circleci_openjdk_gcloud:8u151-jdk-gcloud-182      
+
+references:
+  defaults: &defaults
+      working_directory: ~/workspace
+      docker:
+        # Specify the build base image here.    
+        - image: mmosttler/circleci_openjdk_gcloud:8u151-jdk-gcloud-182      
+
+  deploy_defaults: &deploy_defaults
+      working_directory: ~/workspace
+      machine:
+        enabled: true
 
 jobs:
   build:
@@ -18,22 +26,6 @@ jobs:
      # Get the code    
     steps:            
       - checkout
-
-      - run: 
-          name: Setup Google App Engine SDK
-          command: |
-            # retrieve our gcloud service account from the CircleCI environment
-            echo $GOOGLE_AUTH | base64 --decode --ignore-garbage > ~/gcp-key.json
-            gcloud auth activate-service-account --key-file  ~/gcp-key.json      
-            # set the gcloud config environment like current project
-            gcloud --quiet config set project $GOOGLE_PROJECT_PREFIX-dev1
-            # don't need right now.
-            #gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}  
-      - save_cache:
-          key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
-          paths:
-            - ~/.config/gcloud
 
       # Download and cache application dependencies
       - restore_cache:
@@ -86,8 +78,6 @@ jobs:
           at: ~/workspace
       - restore_cache:
           key: v1-dependencies-{{ checksum "pom.xml" }}
-      #- restore_cache:
-      #    key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
   
       - run:
           name: Start DataStore
@@ -111,7 +101,7 @@ jobs:
           path: ~/junit         
 
   deploy-dev:  
-    <<: *defaults
+    <<: *deploy_defaults
     steps:        
       - attach-workspace:
           at: ~/workspace
@@ -120,13 +110,19 @@ jobs:
       - deploy: 
           name: Deploy to DEV
           command: |
+            # retrieve our gcloud service account from the CircleCI environment
+            echo $GOOGLE_AUTH | base64 --decode --ignore-garbage > ~/gcp-key.json
+            gcloud auth activate-service-account --key-file  ~/gcp-key.json      
+            # set the gcloud config environment like current project
+            gcloud --quiet config set project $GOOGLE_PROJECT_PREFIX-dev1
+
             GAE_TAG=$(echo "$CIRCLE_TAG" | sed 's/./\L&/g' | sed 's/[\.\+]/-/g')
             gcloud app deploy target/appengine-staging/app.yaml --version v$GAE_TAG-$CIRCLE_BUILD_NUM
       - store_artifacts:
           path: ~/.config/gcloud/logs 
       
   deploy-uat:  
-    <<: *defaults
+    <<: *deploy_defaults
     steps:        
       - attach-workspace:
           at: ~/workspace
@@ -144,7 +140,7 @@ jobs:
             gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version --version v$GAE_TAG-$CIRCLE_BUILD_NUM
 
   deploy-loadtest:  
-    <<: *defaults
+    <<: *deploy_defaults
     steps:        
       - attach-workspace:
           at: ~/workspace
@@ -153,11 +149,17 @@ jobs:
       - deploy: 
           name: Deploy to LOAD TEST
           command: |
+            # retrieve our gcloud service account from the CircleCI environment
+            echo $GOOGLE_AUTH_LOADTEST | base64 --decode --ignore-garbage > ~/gcp-key.json
+            gcloud auth activate-service-account --key-file  ~/gcp-key.json      
+            # set the gcloud config environment like current project
+            gcloud --quiet config set project $GOOGLE_PROJECT_PREFIX-laodtest1
+
             GAE_TAG=$(echo "$CIRCLE_TAG" | sed 's/./\L&/g' | sed 's/[\.\+]/-/g')
-            gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version --version v$CIRCLE_TAG-$CIRCLE_BUILD_NUM
+            gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version --version v$GAE_TAG-$CIRCLE_BUILD_NUM
             
   deploy-prod:  
-    <<: *defaults
+    <<: *deploy_defaults
     steps:        
       - attach-workspace:
           at: ~/workspace
@@ -166,11 +168,15 @@ jobs:
       - deploy: 
           name: Deploy to PROD
           command: |
-            GAE_TAG=$(echo "$CIRCLE_TAG" | sed 's/./\L&/g' | sed 's/[\.\+]/-/g')
-            gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version --version v$CIRCLE_TAG-$CIRCLE_BUILD_NUM
+            # retrieve our gcloud service account from the CircleCI environment
+            echo $GOOGLE_AUTH_PROD | base64 --decode --ignore-garbage > ~/gcp-key.json
+            gcloud auth activate-service-account --key-file  ~/gcp-key.json      
+            # set the gcloud config environment like current project
+            gcloud --quiet config set project $GOOGLE_PROJECT_PREFIX-prod
 
-# git ls-remote |grep $(git ls-remote | grep HEAD | grep -o '^[0-9a-zA-Z]*')|grep -o '[0-9]\.[0-9]\..*'
-# ^(\d+\.\d+\.\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?[\^\{\}]*$
+            GAE_TAG=$(echo "$CIRCLE_TAG" | sed 's/./\L&/g' | sed 's/[\.\+]/-/g')
+            gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version --version v$GAE_TAG-$CIRCLE_BUILD_NUM
+
 workflows:
   version: 2
   build-deploy-promote:
@@ -213,7 +219,7 @@ workflows:
       - deploy-loadtest:      
           filters:
             tags:
-              only: /loadtest/
+              only: /^(\d+\.\d+\.\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+(loadtest))?[\^\{\}]*$/
             branches:
               ignore: /.*/
           requires:        
@@ -224,7 +230,7 @@ workflows:
           type: approval
           filters:
             tags:
-              only: /prod/
+              only: /^(\d+\.\d+\.\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+(prod))?[\^\{\}]*$/
             branches:
               ignore: /.*/
           requires:
@@ -233,7 +239,7 @@ workflows:
       - deploy-prod:
           filters:
             tags:
-              only: /prod/
+              only: /^(\d+\.\d+\.\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+(prod))?[\^\{\}]*$/
             branches:
               ignore: /.*/
           requires:        
