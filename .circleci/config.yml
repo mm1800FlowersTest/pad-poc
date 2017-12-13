@@ -182,15 +182,6 @@ workflows:
             - unit-test
             - integration-test
             
-      - hold-uat:
-          type: approval
-          filters:
-            tags:
-              only: /UAT/
-            branches:
-              ignore: /.*/
-          requires:
-            - deploy-dev
       - deploy-uat:      
           filters:
             tags:
