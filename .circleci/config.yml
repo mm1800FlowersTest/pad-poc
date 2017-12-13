@@ -29,7 +29,13 @@ jobs:
             gcloud --quiet config set project $GOOGLE_PROJECT_PREFIX-dev1
             # don't need right now.
             #gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}            
+            #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}  
+            
+            echo "export TEST='HELLO.new+world' | sed 's/./\L&/g' | sed 's/[\.\+]/-/g'" >> $BASH_ENV
+            echo $TEST
+            echo $CIRCLE_REPOSITORY_URL | sed 's/./\L&/g' | sed 's/[\.\+]/-/g'
+            
+                      
       - save_cache:
           key: v1-gcloud-{{ .Environment.CIRCLE_SHA1 }}
           paths:
@@ -138,6 +144,9 @@ jobs:
             #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}            
   
             #deploy        
+            echo "export TEST='HELLO.new+world' | sed 's/./\L&/g' | sed 's/[\.\+]/-/g'" >> $BASH_ENV
+            echo $TEST
+            echo $CIRCLE_TAG | sed 's/./\L&/g' | sed 's/[\.\+]/-/g'
             gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version --version v$CIRCLE_TAG-$CIRCLE_BUILD_NUM
 
   deploy-loadtest:  
