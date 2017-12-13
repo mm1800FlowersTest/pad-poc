@@ -162,6 +162,8 @@ jobs:
           name: Deploy to PROD
           command: gcloud app deploy target/appengine-staging/app.yaml --no-promote --no-stop-previous-version --version v$CIRCLE_TAG-$CIRCLE_BUILD_NUM
 
+# git ls-remote |grep $(git ls-remote | grep HEAD | grep -o '^[0-9a-zA-Z]*')|grep -o '[0-9]\.[0-9]\..*'
+# ^(\d+\.\d+\.\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?[\^\{\}]*$
 workflows:
   version: 2
   build-deploy-promote:
@@ -194,7 +196,7 @@ workflows:
       - deploy-uat:      
           filters:
             tags:
-              only: /UAT/
+              only: /.*\+uat.*/
             branches:
               ignore: /.*/
           requires:        
@@ -204,7 +206,7 @@ workflows:
       - deploy-loadtest:      
           filters:
             tags:
-              only: /LOADTEST/
+              only: /loadtest/
             branches:
               ignore: /.*/
           requires:        
@@ -215,7 +217,7 @@ workflows:
           type: approval
           filters:
             tags:
-              only: /PROD/
+              only: /prod/
             branches:
               ignore: /.*/
           requires:
@@ -224,7 +226,7 @@ workflows:
       - deploy-prod:
           filters:
             tags:
-              only: /PROD/
+              only: /prod/
             branches:
               ignore: /.*/
           requires:        
