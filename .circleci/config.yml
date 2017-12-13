@@ -212,7 +212,6 @@ workflows:
           requires:
             - unit-test
             - integration-test
-            - deploy-uat
       - deploy-prod:
           filters:
             tags:
