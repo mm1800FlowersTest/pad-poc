@@ -129,10 +129,8 @@ jobs:
       - deploy: 
           name: Deploy to UAT
           command: |
-            # retrieve our gcloud service account from the CircleCI environment
             echo $GOOGLE_AUTH_UAT1 | base64 --decode --ignore-garbage > ~/gcp-key.json
             gcloud auth activate-service-account --key-file  ~/gcp-key.json      
-            # set the gcloud config environment like current project
             gcloud --quiet config set project $GOOGLE_PROJECT_PREFIX-uat1
   
             #deploy        
@@ -149,10 +147,8 @@ jobs:
       - deploy: 
           name: Deploy to LOAD TEST
           command: |
-            # retrieve our gcloud service account from the CircleCI environment
             echo $GOOGLE_AUTH_LOADTEST | base64 --decode --ignore-garbage > ~/gcp-key.json
             gcloud auth activate-service-account --key-file  ~/gcp-key.json      
-            # set the gcloud config environment like current project
             gcloud --quiet config set project $GOOGLE_PROJECT_PREFIX-laodtest1
 
             GAE_TAG=$(echo "$CIRCLE_TAG" | sed 's/./\L&/g' | sed 's/[\.\+]/-/g')
@@ -168,10 +164,8 @@ jobs:
       - deploy: 
           name: Deploy to PROD
           command: |
-            # retrieve our gcloud service account from the CircleCI environment
             echo $GOOGLE_AUTH_PROD | base64 --decode --ignore-garbage > ~/gcp-key.json
             gcloud auth activate-service-account --key-file  ~/gcp-key.json      
-            # set the gcloud config environment like current project
             gcloud --quiet config set project $GOOGLE_PROJECT_PREFIX-prod
 
             GAE_TAG=$(echo "$CIRCLE_TAG" | sed 's/./\L&/g' | sed 's/[\.\+]/-/g')
