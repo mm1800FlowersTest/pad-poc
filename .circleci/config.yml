@@ -91,7 +91,10 @@ jobs:
   
       - run:
           name: Start DataStore
-          command: gcloud beta emulators datastore start
+          command: |
+            #needs project to be set, just set to dev1
+            gcloud --quiet config set project $GOOGLE_PROJECT_PREFIX-dev1
+            gcloud beta emulators datastore start
           background: true
       - run:
           name: Run Integration Tests
