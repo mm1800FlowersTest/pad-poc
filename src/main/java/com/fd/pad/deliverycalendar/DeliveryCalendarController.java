@@ -56,6 +56,7 @@ public class DeliveryCalendarController
 	@GetMapping("/rabbit/publish")
 	public String publishToRabbit(@RequestParam String message, @RequestParam String host)
 	{
+		System.out.println(" [*] Received request to publish message to " + host);
 		String result;
 
 		ConnectionFactory factory = new ConnectionFactory();
@@ -66,23 +67,33 @@ public class DeliveryCalendarController
 		try 
 		{
 			connection = factory.newConnection();
+			System.out.println(" [.] Created connection");
 			channel = connection.createChannel();
+			System.out.println(" [.] Created channel");
 
 			channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+			System.out.println(" [.] Declared queue");
 
 			channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
 			System.out.println(" [x] Sent '" + message + "'");
 		} 
 		catch (IOException | TimeoutException e) 
 		{
+			System.err.println(" [!] Error publishing message");
 			e.printStackTrace();
 		}
 		finally 
 		{
 			try 
 			{
-				channel.close();
-				connection.close();					
+				if(channel != null)
+				{
+					channel.close();
+				}
+				if(connection != null)
+				{
+					connection.close();
+				}
 			} 
 			catch (IOException | TimeoutException e) 
 			{
