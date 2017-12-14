@@ -54,12 +54,12 @@ public class DeliveryCalendarController
 	}
 	
 	@GetMapping("/rabbit/publish")
-	public String publishToRabbit(@RequestParam String message)
+	public String publishToRabbit(@RequestParam String message, @RequestParam String host)
 	{
 		String result;
 
 		ConnectionFactory factory = new ConnectionFactory();
-		factory.setHost(HOST);
+		factory.setHost(( (host != null && !host.isEmpty()) ? host : HOST ));
 		Connection connection = null;
 		Channel channel = null;
 		
@@ -90,17 +90,17 @@ public class DeliveryCalendarController
 			}		
 		}
 		
-		result = "Message Published <div><a href='/rabbit/consume'>Consume</a></div><br/><div><a href='/TestRabbitProducer.html'>Publish More</a></div>";
+		result = "Message Published <div><a href='/rabbit/consume?host=" + ( (host != null && !host.isEmpty()) ? host : HOST ) + "'>Consume</a></div><br/><div><a href='/TestRabbitProducer.html'>Publish More</a></div>";
 		return result;
 	}
 	
 	@GetMapping("/rabbit/consume")
-	public String consumeFromRabbit()
+	public String consumeFromRabbit(@RequestParam String host)
 	{
 		String result;
 
 		ConnectionFactory factory = new ConnectionFactory();
-		factory.setHost(HOST);
+		factory.setHost(( (host != null && !host.isEmpty()) ? host : HOST ));
 		Connection connection = null;
 		Channel channel = null;
 		String message = null;
@@ -136,7 +136,7 @@ public class DeliveryCalendarController
 			}		
 		}
 		
-		result = "<div><a href='/TestRabbitProducer.html'>Publish More</a></div><br/><div><a href='/rabbit/consume'>Consume More</a></div> <br/><br/>Message Consumed: " + message;
+		result = "<div><a href='/TestRabbitProducer.html'>Publish More</a></div><br/><div><a href='/rabbit/consume?host=" + ( (host != null && !host.isEmpty()) ? host : HOST ) + "'>Consume More</a></div> <br/><br/>Message Consumed: " + message;
 		return result;
 	}
 }
