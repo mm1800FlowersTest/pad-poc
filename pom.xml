@@ -62,14 +62,20 @@
 			<artifactId>endpoints-framework</artifactId>
 			<version>2.0.9</version>
 		</dependency>
-		
+
+        <!-- DataStore -->		
 		<dependency>
 			<groupId>com.google.cloud</groupId>
 			<artifactId>google-cloud-datastore</artifactId>
-			<!-- <version>1.12.0</version> -->
 			<version>1.0.0</version>
 		</dependency>
-		
+
+        <!-- RabbitMQ -->
+		<dependency>
+			<groupId>com.rabbitmq</groupId>
+			<artifactId>amqp-client</artifactId>
+			<version>5.0.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
