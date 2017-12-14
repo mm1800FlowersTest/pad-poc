@@ -76,10 +76,13 @@ public class DeliveryCalendarController
 
 			channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
 			System.out.println(" [x] Sent '" + message + "'");
+			
+			result = "Message Published";
 		} 
 		catch (IOException | TimeoutException e) 
 		{
 			System.err.println(" [!] Error publishing message");
+			result = " [!] Error publishing message";
 			e.printStackTrace();
 		}
 		finally 
@@ -101,8 +104,7 @@ public class DeliveryCalendarController
 			}		
 		}
 		
-		result = "Message Published <div><a href='/rabbit/consume?host=" + ( (host != null && !host.isEmpty()) ? host : HOST ) + "'>Consume</a></div><br/><div><a href='/TestRabbitProducer.html'>Publish More</a></div>";
-		return result;
+		return result + " <div><a href='/rabbit/consume?host=" + ( (host != null && !host.isEmpty()) ? host : HOST ) + "'>Consume</a></div><br/><div><a href='/TestRabbitProducer.html'>Publish More</a></div>";
 	}
 	
 	@GetMapping("/rabbit/consume")
@@ -129,17 +131,26 @@ public class DeliveryCalendarController
 			{
 				message = new String(getResponse.getBody(), "UTF-8");
 			}
+			
+			result = "Message Consumed: " + message;
 		} 
 		catch (IOException | TimeoutException e) 
 		{
+			result = " [!] Error consuming message";
 			e.printStackTrace();
 		}
 		finally 
 		{
 			try 
 			{
-				channel.close();
-				connection.close();					
+				if(channel != null)
+				{
+					channel.close();
+				}
+				if(connection != null)
+				{
+					connection.close();
+				}
 			} 
 			catch (IOException | TimeoutException e) 
 			{
@@ -147,7 +158,6 @@ public class DeliveryCalendarController
 			}		
 		}
 		
-		result = "<div><a href='/TestRabbitProducer.html'>Publish More</a></div><br/><div><a href='/rabbit/consume?host=" + ( (host != null && !host.isEmpty()) ? host : HOST ) + "'>Consume More</a></div> <br/><br/>Message Consumed: " + message;
-		return result;
+		return result + "<br/><br/><div><a href='/TestRabbitProducer.html'>Publish More</a></div><br/><div><a href='/rabbit/consume?host=" + ( (host != null && !host.isEmpty()) ? host : HOST ) + "'>Consume More</a></div>";
 	}
 }
